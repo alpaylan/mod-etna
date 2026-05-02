@@ -1,0 +1,47 @@
+name = "mod"
+description = "Fast type-safe modular arithmetic (Bodigrim/mod). Bug fixes mined from upstream history; modern HEAD is the base, each patch reverse-applies a fix to install the original bug."
+language = "haskell"
+strategies = ["quickcheck", "hedgehog", "falsify", "smallcheck"]
+crate = "mod"
+base_commit = "44506651f4bc84c51587031f81e6fa6203e1dc9c"
+
+# ---------------------------------------------------------------------------
+# Variant: invert_mod_unit_86672749_1
+# ---------------------------------------------------------------------------
+[[tasks]]
+mutations = ["invert_mod_unit_86672749_1"]
+
+[tasks.source]
+repo = "https://github.com/Bodigrim/mod"
+commits = ["86672749346f8b604972cdc8e69df2e25bcc593f"]
+commit_subjects = ["Fix invertMod (0 :: Mod 1)"]
+origin = "internal"
+summary = "invertMod for the unit modulus (Mod 1) used to fall through to integerRecipMod#/invertModWordOdd, both of which return Nothing for x = 0. But Mod 1 has 0 as its only inhabitant and gcd(0, 1) = 1, so invertMod must return Just 0. The fix adds a special case for modulus 1 in both Data.Mod.invertModInternal and Data.Mod.Word.invertMod. See https://gitlab.haskell.org/ghc/ghc/-/issues/26017."
+
+[tasks.injection]
+kind = "patch"
+files = ["Data/Mod.hs", "Data/Mod/Word.hs"]
+locations = [
+  { file = "Data/Mod.hs",      line = 354, symbol = "invertModInternal" },
+  { file = "Data/Mod/Word.hs", line = 337, symbol = "invertMod" },
+]
+patch = "patches/invert_mod_unit.patch"
+
+[tasks.bug]
+short_name = "invertMod_returns_Nothing_for_unit_modulus"
+invariant = "For every x :: Mod 1 the call invertMod x must return Just y with x * y == fromInteger 1 (which equals 0 in Mod 1). The same holds for the Word-backed variant Data.Mod.Word.invertMod."
+how_triggered = "Reverse-applying the patch removes the explicit Mod 1 fallback in both Data.Mod.invertModInternal and Data.Mod.Word.invertMod. Calling invertMod (0 :: Mod 1) or Word.invertMod (0 :: Word.Mod 1) then returns Nothing instead of Just 0, violating the modular-inverse contract for the unit modulus."
+
+[[tasks.tasks]]
+property = "InvertModNaturalUnit"
+witnesses = [
+  { test_fn = "witness_invert_mod_natural_unit_case_zero",  note = "Data.Mod.invertMod (0 :: Mod 1) must equal Just 0" },
+  { test_fn = "witness_invert_mod_natural_unit_case_seven", note = "Data.Mod.invertMod (7 :: Mod 1) must equal Just 0 (7 reduces to 0 mod 1)" },
+]
+
+[[tasks.tasks]]
+property = "InvertModWordUnit"
+witnesses = [
+  { test_fn = "witness_invert_mod_word_unit_case_zero",  note = "Data.Mod.Word.invertMod (0 :: Mod 1) must equal Just 0" },
+  { test_fn = "witness_invert_mod_word_unit_case_seven", note = "Data.Mod.Word.invertMod (7 :: Mod 1) must equal Just 0 (7 reduces to 0 mod 1)" },
+]

@@ -1,0 +1,65 @@
+From 86672749346f8b604972cdc8e69df2e25bcc593f Mon Sep 17 00:00:00 2001
+From: Bodigrim <andrew.lelechenko@gmail.com>
+Date: Sat, 13 Sep 2025 19:20:56 +0200
+Subject: [PATCH] Fix invertMod (0 :: Mod 1)
+
+---
+ Data/Mod.hs      | 4 +++-
+ Data/Mod/Word.hs | 2 ++
+ test/Test.hs     | 4 ++++
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/Data/Mod.hs b/Data/Mod.hs
+index 71b4c0a..5ccbef7 100644
+--- a/Data/Mod.hs
++++ b/Data/Mod.hs
+@@ -352,8 +352,10 @@ invertModInternal
+   :: Natural -- Value
+   -> Natural -- Modulo
+   -> Maybe Natural
++invertModInternal 0 1 = Just 0
+ invertModInternal x m = case integerRecipMod# (toInteger x) m of
+-  (# | () #) -> Nothing
++  -- See https://gitlab.haskell.org/ghc/ghc/-/issues/26017
++  (# | () #) -> if m == 1 then Just 0 else Nothing
+   (# y | #)  -> Just y
+ {-# INLINABLE invertModInternal #-}
+ 
+diff --git a/Data/Mod/Word.hs b/Data/Mod/Word.hs
+index 45ad23c..1d0657e 100644
+--- a/Data/Mod/Word.hs
++++ b/Data/Mod/Word.hs
+@@ -335,6 +335,8 @@ invertMod :: KnownNat m => Mod m -> Maybe (Mod m)
+ invertMod mx@(Mod !x) = case natVal mx of
+   NatJ#{}   -> tooLargeModulus
+   NatS# 0## -> Nothing
++  -- See https://gitlab.haskell.org/ghc/ghc/-/issues/26017
++  NatS# 1## -> Just 0
+   NatS# m#  -> Mod <$> invertModWord x (W# m#)
+ 
+ invertModWord :: Word -> Word -> Maybe Word
+diff --git a/test/Test.hs b/test/Test.hs
+index 8825efa..c996fd2 100644
+--- a/test/Test.hs
++++ b/test/Test.hs
+@@ -58,6 +58,8 @@ main = defaultMain $ testGroup "All" $
+   [ testGroup "Mod 1" $
+     testProperty "fromInteger"
+       (fromIntegerProp (Proxy :: Proxy 1)) :
++    testProperty "invertMod"
++      (invertMod (0 :: Mod 1) == Just 0) :
+     map lawsToTest (laws1 (Proxy :: Proxy (Mod 1)))
+   , testMod(2310)
+   , testMod(2^16-1)
+@@ -103,6 +105,8 @@ main = defaultMain $ testGroup "All" $
+   , testGroup "Word.Mod 1" $
+     testProperty "fromInteger"
+       (fromIntegerWordProp (Proxy :: Proxy 1)) :
++    testProperty "invertMod"
++      (Word.invertMod (0 :: Word.Mod 1) == Just 0) :
+     map lawsToTest (laws1 (Proxy :: Proxy (Word.Mod 1)))
+   , testMod(2310)
+   , testMod(2^16-1)
+-- 
+2.37.1 (Apple Git-137.1)
+

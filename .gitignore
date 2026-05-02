@@ -4,3 +4,6 @@ stack.yaml
 dist
 dist-newstyle
 .ghc.environment*
+progress.jsonl
+etna.log
+.hegel/

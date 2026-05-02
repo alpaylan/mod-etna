@@ -1,0 +1,6 @@
+with-compiler: /Users/akeles/.ghcup/ghc/9.6.6/bin/ghc
+packages: . etna/
+package mod
+  flags: -vector
+constraints:
+  mod -vector

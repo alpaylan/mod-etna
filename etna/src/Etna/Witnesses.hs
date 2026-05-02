@@ -1,0 +1,21 @@
+module Etna.Witnesses
+  ( witness_invert_mod_natural_unit_case_zero
+  , witness_invert_mod_natural_unit_case_seven
+  , witness_invert_mod_word_unit_case_zero
+  , witness_invert_mod_word_unit_case_seven
+  ) where
+
+import Etna.Properties
+import Etna.Result
+
+witness_invert_mod_natural_unit_case_zero :: PropertyResult
+witness_invert_mod_natural_unit_case_zero = property_invert_mod_natural_unit 0
+
+witness_invert_mod_natural_unit_case_seven :: PropertyResult
+witness_invert_mod_natural_unit_case_seven = property_invert_mod_natural_unit 7
+
+witness_invert_mod_word_unit_case_zero :: PropertyResult
+witness_invert_mod_word_unit_case_zero = property_invert_mod_word_unit 0
+
+witness_invert_mod_word_unit_case_seven :: PropertyResult
+witness_invert_mod_word_unit_case_seven = property_invert_mod_word_unit 7
