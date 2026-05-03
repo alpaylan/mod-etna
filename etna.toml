@@ -25,7 +25,7 @@ locations = [
   { file = "Data/Mod.hs",      line = 354, symbol = "invertModInternal" },
   { file = "Data/Mod/Word.hs", line = 337, symbol = "invertMod" },
 ]
-patch = "patches/invert_mod_unit.patch"
+patch = "patches/invert_mod_unit_86672749_1.patch"
 
 [tasks.bug]
 short_name = "invertMod_returns_Nothing_for_unit_modulus"

@@ -352,10 +352,8 @@ invertModInternal
   :: Natural -- Value
   -> Natural -- Modulo
   -> Maybe Natural
-invertModInternal 0 1 = Just 0
 invertModInternal x m = case integerRecipMod# (toInteger x) m of
-  -- See https://gitlab.haskell.org/ghc/ghc/-/issues/26017
-  (# | () #) -> if m == 1 then Just 0 else Nothing
+  (# | () #) -> Nothing
   (# y | #)  -> Just y
 {-# INLINABLE invertModInternal #-}
 
